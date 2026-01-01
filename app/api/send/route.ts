@@ -30,7 +30,7 @@ ${userMessage}
 
     const { data, error } = await resend.emails.send({
       from: `${senderName} <onboarding@resend.dev>`, // Inbox mein naam show hoga
-      to: "rohanadnan007@gmail.com",
+      to: process.env.RESEND_EMAIL || "",
       replyTo: fromEmail,
       subject: `[Contact Form] ${subject}`, // Subject ko thora identify-able banaya
       text: formattedMessage, // Yahan humne naya format use kiya hai
