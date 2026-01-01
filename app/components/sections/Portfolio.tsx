@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const projects = [
   {
@@ -63,29 +64,47 @@ const categories = ["All", "Web Development", "UI/UX Design", "Mobile App"];
 
 export default function Portfolio() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const filteredProjects =
     activeCategory === "All"
       ? projects
       : projects.filter((p) => p.category === activeCategory);
 
+  const cardsPerView = 3;
+  const totalSlides = Math.max(1, Math.ceil(filteredProjects.length / cardsPerView));
+
+  const visibleProjects = filteredProjects.slice(
+    currentSlide * cardsPerView,
+    currentSlide * cardsPerView + cardsPerView
+  );
+
+  const handlePrevious = () => {
+    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1));
+  };
+
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [activeCategory]);
+
   return (
     <section id="portfolio" className="py-24 md:py-32">
       <div className="container-cls mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <span className="section-label">My Work</span>
-          <h2 className="section-title">
-            Featured <span className="gradient-text">Projects</span>
-          </h2>
-          <p className="text-muted max-w-2xl mx-auto">
-            Take a look at some of my recent projects. Each one was crafted with
-            attention to detail and a focus on delivering real business value.
+          <span className="section-label">Portfolio</span>
+          <h2 className="section-title uppercase">Some Of Our Work</h2>
+          <p className="text-muted max-w-4xl mx-auto">
+            We have worked with clients all over the world for home services contractors, restaurants, consulting agencies, start ups, dermatologists, doctors, accountants, and more. No matter what your business is, we can build a website that is effective, beautiful, performant, and tailored to your industry.
           </p>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
+        {/* <div className="flex flex-wrap justify-center gap-3 mb-12">
           {categories.map((category) => (
             <button
               key={category}
@@ -99,70 +118,114 @@ export default function Portfolio() {
               {category}
             </button>
           ))}
-        </div>
+        </div> */}
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project, index) => (
-            <a
-              key={project.id}
-              href={project.link}
-              className="group block rounded-2xl overflow-hidden bg-card-bg border border-card-border card-hover animate-fadeInUp opacity-0"
-              style={{ animationDelay: `${0.1 * (index + 1)}s` }}
-            >
-              {/* Image */}
-              <div className="relative h-56 overflow-hidden">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                {/* View Button */}
-                <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                  <span className="text-white text-sm font-medium">View Project</span>
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M7 17 17 7" />
-                      <path d="M7 7h10v10" />
-                    </svg>
+        {/* Projects Slider */}
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {visibleProjects.map((project, index) => (
+              <a
+                key={project.id}
+                href={project.link}
+                className="group block rounded-2xl overflow-hidden bg-card-bg border border-card-border card-hover animate-fadeInUp opacity-0"
+                style={{ animationDelay: `${0.1 * (index + 1)}s` }}
+              >
+                {/* Image */}
+                <div className="relative h-56 overflow-hidden">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  {/* View Button */}
+                  <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                    <span className="text-white text-sm font-medium">View Project</span>
+                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M7 17 17 7" />
+                        <path d="M7 7h10v10" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  <span className="text-xs font-medium text-primary uppercase tracking-wider">
+                    {project.category}
+                  </span>
+                  <h3 className="text-lg font-semibold mt-2 mb-2">{project.title}</h3>
+                  <p className="text-muted text-sm mb-4">{project.description}</p>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {project.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 text-xs rounded-full bg-secondary text-muted"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {/* Slider Controls */}
+          {totalSlides > 1 && (
+            <div className="flex items-center justify-between mt-8">
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrevious}
+                  className="w-12 h-12 rounded-full bg-card-bg border border-card-border flex items-center justify-center text-muted hover:text-primary hover:border-primary transition-colors"
+                  aria-label="Previous slide"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="w-12 h-12 rounded-full bg-card-bg border border-card-border flex items-center justify-center text-muted hover:text-primary hover:border-primary transition-colors"
+                  aria-label="Next slide"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
 
-              {/* Content */}
-              <div className="p-6">
-                <span className="text-xs font-medium text-primary uppercase tracking-wider">
-                  {project.category}
-                </span>
-                <h3 className="text-lg font-semibold mt-2 mb-2">{project.title}</h3>
-                <p className="text-muted text-sm mb-4">{project.description}</p>
-                
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 text-xs rounded-full bg-secondary text-muted"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+              {/* Slide Indicators */}
+              <div className="flex gap-2">
+                {Array.from({ length: totalSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`h-2 rounded-full transition-all ${
+                      index === currentSlide
+                        ? "w-8 bg-primary"
+                        : "w-2 bg-card-border hover:bg-muted"
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
               </div>
-            </a>
-          ))}
+
+              <div className="text-sm text-muted">
+                {currentSlide + 1} / {totalSlides}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* View All Button */}

@@ -83,7 +83,7 @@ export default function Services() {
             Never Worry About<br/> Your<span className="gradient-text"> Website </span>Ever Again
           </h2>
           <p className="text-muted max-w-4xl mx-auto">
-            We specialize in small business web design and development for clients anywhere in the US and Canada. Every line of code is written by hand to ensure the best performance and make Google happy, which helps bring in more customers to your site and bring more revenue to your business. We also manage the edits for you and will never leave you high and dry. Our goal is to create long term relationships with our clients and see them grow over time.
+            We specialize in web design and development for clients anywhere in the world. Every line of code is written by hand to ensure the best performance and make Google happy, which helps bring in more customers to your site and bring more revenue to your business. We also manage the edits for you and will never leave you high and dry. Our goal is to create long term relationships with our clients and see them grow over time.
           </p>
         </div>
 

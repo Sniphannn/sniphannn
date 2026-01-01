@@ -5,6 +5,8 @@ import About from "./components/sections/About";
 import Testimonials from "./components/sections/Testimonials";
 import Contact from "./components/sections/Contact";
 import Footer from "./components/Footer";
+import Pricing from "./components/sections/Pricing";
+import Performance from "./components/sections/Performance";
 
 export default function Home() {
   return (
@@ -14,6 +16,8 @@ export default function Home() {
       <Portfolio />
       {/* <About /> */}
       {/* <Testimonials /> */}
+      <Performance />
+      <Pricing />
       <Contact />
       <Footer />
     </>

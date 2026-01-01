@@ -4,35 +4,69 @@ import React, { useState } from "react";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    senderName: "",
+    fromEmail: "",
     subject: "",
     message: "",
+    photo: null as File | null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitStatus("idle");
+    setErrorMessage("");
     
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    // Here you would typically send the data to your API
-    console.log("Form submitted:", formData);
-    
-    setIsSubmitting(false);
-    setFormData({ name: "", email: "", subject: "", message: "" });
-    alert("Message sent successfully!");
+    try {
+      const form = e.currentTarget;
+      const formDataToSend = new FormData(form);
+
+      const res = await fetch("/api/send", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      if (res.ok) {
+        setSubmitStatus("success");
+        setFormData({ senderName: "", fromEmail: "", subject: "", message: "", photo: null });
+        form.reset();
+        
+        // Reset success message after 5 seconds
+        setTimeout(() => setSubmitStatus("idle"), 5000);
+      } else {
+        const result = await res.json();
+        setSubmitStatus("error");
+        setErrorMessage(result.error?.message || "Failed to send email. Please try again.");
+      }
+    } catch (err) {
+      setSubmitStatus("error");
+      setErrorMessage("An unexpected error occurred. Please try again.");
+      console.error("Form submission error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value, type } = e.target;
+    
+    if (type === "file") {
+      const fileInput = e.target as HTMLInputElement;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: fileInput.files?.[0] || null,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   return (
@@ -173,16 +207,30 @@ export default function Contact() {
             className="bg-card-bg border border-card-border rounded-2xl p-8"
           >
             <div className="space-y-6">
+              {/* Success Message */}
+              {submitStatus === "success" && (
+                <div className="p-4 rounded-xl bg-accent/10 border border-accent text-accent">
+                  <p className="font-medium">✓ Message sent successfully! Thank you for reaching out.</p>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {submitStatus === "error" && (
+                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500 text-red-500">
+                  <p className="font-medium">✕ {errorMessage}</p>
+                </div>
+              )}
+
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2">
+                  <label htmlFor="senderName" className="block text-sm font-medium mb-2">
                     Your Name
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
+                    id="senderName"
+                    name="senderName"
+                    value={formData.senderName}
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 rounded-xl bg-secondary border border-card-border focus:border-primary focus:outline-none transition-colors"
@@ -190,14 +238,14 @@ export default function Contact() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
+                  <label htmlFor="fromEmail" className="block text-sm font-medium mb-2">
                     Your Email
                   </label>
                   <input
                     type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
+                    id="fromEmail"
+                    name="fromEmail"
+                    value={formData.fromEmail}
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 rounded-xl bg-secondary border border-card-border focus:border-primary focus:outline-none transition-colors"
@@ -239,6 +287,20 @@ export default function Contact() {
                   rows={5}
                   className="w-full px-4 py-3 rounded-xl bg-secondary border border-card-border focus:border-primary focus:outline-none transition-colors resize-none"
                   placeholder="Tell me about your project..."
+                />
+              </div>
+
+              <div>
+                <label htmlFor="photo" className="block text-sm font-medium mb-2">
+                  Attachment (Optional)
+                </label>
+                <input
+                  type="file"
+                  id="photo"
+                  name="photo"
+                  onChange={handleChange}
+                  accept="image/*"
+                  className="w-full px-4 py-3 rounded-xl bg-secondary border border-card-border focus:border-primary focus:outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary-hover"
                 />
               </div>
 

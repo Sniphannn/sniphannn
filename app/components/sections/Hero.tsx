@@ -29,7 +29,7 @@ export default function Hero() {
         <div className="animate-fadeInUp opacity-0" style={{ animationDelay: "0.1s" }}>
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-sm font-medium text-muted mb-8">
             <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            Available for freelance work
+            Available for work
           </span>
         </div>
 
@@ -58,8 +58,8 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fadeInUp opacity-0"
           style={{ animationDelay: "0.4s" }}
         >
-          <a href="#portfolio" className="btn-primary text-base px-8 py-4">
-            View My Work
+          <a href="#contact" className="btn-primary text-base px-8 py-4">
+            Let&apos;s Talk
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -75,13 +75,13 @@ export default function Hero() {
               <path d="m12 5 7 7-7 7" />
             </svg>
           </a>
-          <a href="#contact" className="btn-secondary text-base px-8 py-4">
+          {/* <a href="#contact" className="btn-secondary text-base px-8 py-4">
             Let&apos;s Talk
-          </a>
+          </a> */}
         </div>
 
         {/* Stats */}
-        <div
+        {/* <div
           className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 pt-10 border-t border-card-border animate-fadeInUp opacity-0"
           style={{ animationDelay: "0.5s" }}
         >
@@ -98,7 +98,7 @@ export default function Hero() {
               <div className="text-sm text-muted">{stat.label}</div>
             </div>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Scroll Indicator */}
