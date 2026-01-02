@@ -27,17 +27,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${interFont.variable} ${monoFont.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
+        {/* ThemeProvider removed - Dark mode only */}
+        {/* <ThemeProvider> */}
           <Navigation />
           {children}
           <WhatsAppChat />
           {/* <ChatBot /> */}
-        </ThemeProvider>
+        {/* </ThemeProvider> */}
       </body>
     </html>
   );
