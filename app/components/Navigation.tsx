@@ -59,9 +59,8 @@ export default function Navigation() {
 
   return (
     <header
-      className={`flex justify-center fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "glass py-3" : "py-4 bg-transparent"
-      }`}
+      className={`flex justify-center fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "glass py-3" : "py-4 bg-transparent"
+        }`}
     >
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center justify-between h-14">
@@ -92,7 +91,7 @@ export default function Navigation() {
           {/* Theme Toggle & CTA */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Theme Toggle Button */}
-            <button
+            {/* <button
               onClick={toggleTheme}
               className="p-2 rounded-full bg-secondary hover:bg-card-border transition-colors flex-shrink-0"
               aria-label="Toggle theme"
@@ -134,7 +133,7 @@ export default function Navigation() {
                   <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
                 </svg>
               )}
-            </button>
+            </button> */}
 
             {/* CTA Button - Desktop only */}
             <a
@@ -188,9 +187,8 @@ export default function Navigation() {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <div className="py-4 border-t border-card-border mt-2">
             <div className="flex flex-col gap-1">

@@ -1,7 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const projects = [
   {
@@ -64,38 +69,114 @@ const categories = ["All", "Web Development", "UI/UX Design", "Mobile App"];
 
 export default function Portfolio() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    loop: true,
+    slidesToScroll: 1,
+    breakpoints: {
+      "(max-width: 640px)": { slidesToScroll: 1 },
+      "(min-width: 641px) and (max-width: 1024px)": { slidesToScroll: 1 },
+      "(min-width: 1025px)": { slidesToScroll: 1 },
+    },
+  });
+  const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
+  const [nextBtnDisabled, setNextBtnDisabled] = useState(true);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
 
   const filteredProjects =
     activeCategory === "All"
       ? projects
       : projects.filter((p) => p.category === activeCategory);
 
-  const cardsPerView = 3;
-  const totalSlides = Math.max(1, Math.ceil(filteredProjects.length / cardsPerView));
+  const onPrevButtonClick = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
 
-  const visibleProjects = filteredProjects.slice(
-    currentSlide * cardsPerView,
-    currentSlide * cardsPerView + cardsPerView
-  );
+  const onNextButtonClick = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
-  const handlePrevious = () => {
-    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1));
-  };
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setPrevBtnDisabled(!emblaApi.canScrollPrev());
+    setNextBtnDisabled(!emblaApi.canScrollNext());
+  }, [emblaApi]);
 
   useEffect(() => {
-    setCurrentSlide(0);
-  }, [activeCategory]);
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.reInit();
+  }, [activeCategory, emblaApi]);
+
+  // Scroll-triggered animations
+  useEffect(() => {
+    // Header animation
+    if (headerRef.current) {
+      const headerElements = headerRef.current.querySelectorAll("span, h2, p");
+      
+      gsap.fromTo(
+        headerElements,
+        {
+          opacity: 0,
+          y: 30,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          stagger: 0.15,
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 70%",
+            once: true,
+          },
+        }
+      );
+    }
+
+    // Cards container animation
+    if (cardsContainerRef.current) {
+      gsap.fromTo(
+        cardsContainerRef.current,
+        {
+          opacity: 0,
+          y: 50,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          scrollTrigger: {
+            trigger: cardsContainerRef.current,
+            start: "top 70%",
+            once: true,
+          },
+        }
+      );
+    }
+
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
+  }, []);
 
   return (
     <section id="portfolio" className="py-24 md:py-32">
       <div className="container-cls mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div ref={headerRef} className="text-center mb-16">
           <span className="section-label">Portfolio</span>
           <h2 className="section-title uppercase">Some Of Our Work</h2>
           <p className="text-muted max-w-4xl mx-auto">
@@ -121,132 +202,118 @@ export default function Portfolio() {
         </div> */}
 
         {/* Projects Slider */}
-        <div className="relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {visibleProjects.map((project, index) => (
-              <a
-                key={project.id}
-                href={project.link}
-                className="group block rounded-2xl overflow-hidden bg-card-bg border border-card-border card-hover animate-fadeInUp opacity-0"
-                style={{ animationDelay: `${0.1 * (index + 1)}s` }}
-              >
-                {/* Image */}
-                <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="relative" ref={cardsContainerRef}>
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex gap-8">
+              {filteredProjects.map((project) => (
+                <div
+                  key={project.id}
+                  className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-16px)] lg:flex-[0_0_calc(33.333%-21px)]"
+                >
+                  <a
+                    href={project.link}
+                    className="group block rounded-2xl overflow-hidden bg-card-bg border border-card-border card-hover h-full"
+                  >
+                    {/* Image */}
+                    <div className="relative h-56 overflow-hidden">
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                  {/* View Button */}
-                  <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                    <span className="text-white text-sm font-medium">View Project</span>
-                    <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M7 17 17 7" />
-                        <path d="M7 7h10v10" />
-                      </svg>
+                      {/* View Button */}
+                      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                        <span className="text-white text-sm font-medium">View Project</span>
+                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M7 17 17 7" />
+                            <path d="M7 7h10v10" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* Content */}
-                <div className="p-6">
-                  <span className="text-xs font-medium text-primary uppercase tracking-wider">
-                    {project.category}
-                  </span>
-                  <h3 className="text-lg font-semibold mt-2 mb-2">{project.title}</h3>
-                  <p className="text-muted text-sm mb-4">{project.description}</p>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-3 py-1 text-xs rounded-full bg-secondary text-muted"
-                      >
-                        {tag}
+                    {/* Content */}
+                    <div className="p-6">
+                      <span className="text-xs font-medium text-primary uppercase tracking-wider">
+                        {project.category}
                       </span>
-                    ))}
-                  </div>
+                      <h3 className="text-lg font-semibold mt-2 mb-2">{project.title}</h3>
+                      <p className="text-muted text-sm mb-4">{project.description}</p>
+
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-2">
+                        {project.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-3 py-1 text-xs rounded-full bg-secondary text-muted"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </a>
                 </div>
-              </a>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Slider Controls */}
-          {totalSlides > 1 && (
-            <div className="flex items-center justify-between mt-8">
-              <div className="flex gap-2">
-                <button
-                  onClick={handlePrevious}
-                  className="w-12 h-12 rounded-full bg-card-bg border border-card-border flex items-center justify-center text-muted hover:text-primary hover:border-primary transition-colors"
-                  aria-label="Previous slide"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="w-12 h-12 rounded-full bg-card-bg border border-card-border flex items-center justify-center text-muted hover:text-primary hover:border-primary transition-colors"
-                  aria-label="Next slide"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Slide Indicators */}
-              <div className="flex gap-2">
-                {Array.from({ length: totalSlides }).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`h-2 rounded-full transition-all ${
-                      index === currentSlide
-                        ? "w-8 bg-primary"
-                        : "w-2 bg-card-border hover:bg-muted"
-                    }`}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
-
-              <div className="text-sm text-muted">
-                {currentSlide + 1} / {totalSlides}
-              </div>
+          <div className="flex items-center justify-between mt-8">
+            <div className="flex gap-2">
+              <button
+                onClick={onPrevButtonClick}
+                disabled={prevBtnDisabled}
+                className="w-12 h-12 rounded-full bg-card-bg border border-card-border flex items-center justify-center text-muted hover:text-primary hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={onNextButtonClick}
+                disabled={nextBtnDisabled}
+                className="w-12 h-12 rounded-full bg-card-bg border border-card-border flex items-center justify-center text-muted hover:text-primary hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
-          )}
-        </div>
 
-        {/* View All Button */}
-        <div className="text-center mt-12">
-          <a href="#" className="btn-secondary">
-            View All Projects
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M5 12h14" />
-              <path d="m12 5 7 7-7 7" />
-            </svg>
-          </a>
+            {/* View All Button */}
+            <div className="text-center">
+              <a href="#" className="btn-secondary">
+                View All Projects
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+
+          </div>
         </div>
       </div>
     </section>

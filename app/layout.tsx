@@ -5,6 +5,7 @@ import WhatsAppChat from "./components/WhatsappChat";
 import ChatBot from "./components/ChatBot";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Navigation from "./components/Navigation";
+import LocomotiveScroll from "./components/Locomotive";
 
 const interFont = Inter({
   variable: "--font-inter",
@@ -27,17 +28,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${interFont.variable} ${monoFont.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
+        {/* ThemeProvider removed - Dark mode only */}
+        {/* <ThemeProvider> */}
+        {/* <LocomotiveScroll> */}
           <Navigation />
           {children}
-          <WhatsAppChat />
-          {/* <ChatBot /> */}
-        </ThemeProvider>
+        {/* </LocomotiveScroll> */}
+        {/* <WhatsAppChat /> */}
+        {/* <ChatBot /> */}
+        {/* </ThemeProvider> */}
       </body>
     </html>
   );
