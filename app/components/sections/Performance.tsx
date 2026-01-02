@@ -1,9 +1,221 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Zap, TrendingUp, Gauge } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Animated Score Circle Component
+const AnimatedScoreCircle = ({ score, label, isMobile = false }: { score: number; label: string; isMobile?: boolean }) => {
+  const circleRef = useRef<SVGCircleElement>(null);
+  const textRef = useRef<SVGTextElement>(null);
+  const size = isMobile ? 96 : 64;
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+
+  useEffect(() => {
+    const circle = circleRef.current;
+    const text = textRef.current;
+
+    if (!circle || !text) return;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: circle.closest("section"),
+        start: "top 70%",
+        once: true,
+      },
+    });
+
+    // Reset to initial state
+    gsap.set(circle, {
+      strokeDasharray: circumference,
+      strokeDashoffset: circumference,
+      stroke: "#ef4444",
+    });
+    gsap.set(text, { textContent: "0" });
+
+    // Animate to green and fill
+    tl.to(
+      circle,
+      {
+        stroke: "#10b981",
+        duration: 0.5,
+      },
+      0
+    )
+      .to(
+        circle,
+        {
+          strokeDashoffset: circumference - (circumference * score) / 100,
+          duration: 1.5,
+          ease: "power2.out",
+        },
+        0.2
+      )
+      .to(
+        { current: 0 },
+        {
+          current: score,
+          duration: 1.5,
+          ease: "power2.out",
+          onUpdate: function () {
+            text.textContent = Math.round(this.targets()[0].current).toString();
+          },
+        },
+        0.2
+      );
+  }, [circumference, score]);
+
+  return (
+    <div className="text-center">
+      <div className={`relative mx-auto mb-2`} style={{ width: `${size}px`, height: `${size}px` }}>
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="#e2e8f0"
+            strokeWidth="4"
+          />
+          <circle
+            ref={circleRef}
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            strokeWidth="4"
+            strokeLinecap="round"
+            transform="rotate(-90 50 50)"
+          />
+          <text
+            ref={textRef}
+            x="50"
+            y="55"
+            textAnchor="middle"
+            fill="currentColor"
+            fontSize={isMobile ? "28" : "20"}
+            fontWeight="bold"
+            className="text-accent"
+          >
+            0
+          </text>
+        </svg>
+      </div>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+    </div>
+  );
+};
+
+// Large Animated Score Component
+const LargeAnimatedScore = () => {
+  const circleRef = useRef<SVGCircleElement>(null);
+  const textRef = useRef<SVGTextElement>(null);
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+
+  useEffect(() => {
+    const circle = circleRef.current;
+    const text = textRef.current;
+
+    if (!circle || !text) return;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: circle.closest("section"),
+        start: "center center",
+        once: true,
+      },
+    });
+
+    // Reset to initial state
+    gsap.set(circle, {
+      strokeDasharray: circumference,
+      strokeDashoffset: circumference,
+      stroke: "#ef4444",
+    });
+    gsap.set(text, { textContent: "0" });
+
+    // Animate to green and fill
+    tl.to(
+      circle,
+      {
+        stroke: "#10b981",
+        duration: 0.5,
+      },
+      0
+    )
+      .to(
+        circle,
+        {
+          strokeDashoffset: circumference - (circumference * 100) / 100,
+          duration: 1.5,
+          ease: "power2.out",
+        },
+        0.2
+      )
+      .to(
+        { current: 0 },
+        {
+          current: 100,
+          duration: 1.5,
+          ease: "power2.out",
+          onUpdate: function () {
+            text.textContent = Math.round(this.targets()[0].current).toString();
+          },
+        },
+        0.2
+      );
+  }, [circumference]);
+
+  return (
+    <div className="relative w-24 h-24 mx-auto mb-3">
+      <svg viewBox="0 0 100 100" className="w-full h-full">
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          stroke="#e2e8f0"
+          strokeWidth="4"
+        />
+        <circle
+          ref={circleRef}
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          strokeWidth="4"
+          strokeLinecap="round"
+          transform="rotate(-90 50 50)"
+        />
+        <text
+          ref={textRef}
+          x="50"
+          y="55"
+          textAnchor="middle"
+          fill="currentColor"
+          fontSize="28"
+          fontWeight="bold"
+          className="text-accent"
+        >
+          0
+        </text>
+      </svg>
+    </div>
+  );
+};
 
 export default function Performance() {
+  useEffect(() => {
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
+  }, []);
+
   const stats = [
     {
       number: "100%",
@@ -125,88 +337,15 @@ export default function Performance() {
                     { label: "Accessibility", score: 100 },
                     { label: "Best Practices", score: 100 },
                     { label: "SEO", score: 100 },
-                  ].map((item, index) => (
-                    <div key={index} className="text-center">
-                      <div className="relative w-16 h-16 mx-auto mb-2">
-                        <svg viewBox="0 0 100 100" className="w-full h-full">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            fill="none"
-                            stroke="#e2e8f0"
-                            strokeWidth="4"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            fill="none"
-                            stroke="#10b981"
-                            strokeWidth="4"
-                            strokeDasharray={`${2 * Math.PI * 45 * (item.score / 100)} ${
-                              2 * Math.PI * 45
-                            }`}
-                            strokeLinecap="round"
-                            transform="rotate(-90 50 50)"
-                          />
-                          <text
-                            x="50"
-                            y="55"
-                            textAnchor="middle"
-                            fill="currentColor"
-                            fontSize="20"
-                            fontWeight="bold"
-                            className="text-accent"
-                          >
-                            {item.score}
-                          </text>
-                        </svg>
-                      </div>
-                      <p className="text-xs font-medium text-muted-foreground">
-                        {item.label}
-                      </p>
-                    </div>
+                  ].map((item) => (
+                    <AnimatedScoreCircle key={item.label} score={item.score} label={item.label} />
                   ))}
                 </div>
 
                 {/* Overall Score */}
                 <div className="flex items-center justify-center mb-8 py-6 border-t border-card-border">
                   <div className="text-center">
-                    <div className="relative w-24 h-24 mx-auto mb-3">
-                      <svg viewBox="0 0 100 100" className="w-full h-full">
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="45"
-                          fill="none"
-                          stroke="#e2e8f0"
-                          strokeWidth="4"
-                        />
-                        <circle
-                          cx="50"
-                          cy="50"
-                          r="45"
-                          fill="none"
-                          stroke="#10b981"
-                          strokeWidth="4"
-                          strokeDasharray={`${2 * Math.PI * 45} ${2 * Math.PI * 45}`}
-                          strokeLinecap="round"
-                          transform="rotate(-90 50 50)"
-                        />
-                        <text
-                          x="50"
-                          y="55"
-                          textAnchor="middle"
-                          fill="currentColor"
-                          fontSize="28"
-                          fontWeight="bold"
-                          className="text-accent"
-                        >
-                          100
-                        </text>
-                      </svg>
-                    </div>
+                    <LargeAnimatedScore />
                     <p className="text-sm font-semibold">Performance</p>
                   </div>
                 </div>
